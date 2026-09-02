@@ -33,4 +33,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto,HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(MenuItemNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleMenuItemNotFound(MenuItemNotFoundException exception) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto,HttpStatus.NOT_FOUND);
+    }
+
 }
