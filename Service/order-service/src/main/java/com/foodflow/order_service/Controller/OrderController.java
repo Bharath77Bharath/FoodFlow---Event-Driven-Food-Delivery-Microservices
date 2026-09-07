@@ -5,6 +5,7 @@ import com.foodflow.order_service.Dto.OrderResponseDto;
 import com.foodflow.order_service.Dto.OrderStatusDto;
 import com.foodflow.order_service.Dto.UpdateOrderStatusDto;
 import com.foodflow.order_service.Service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody CreateOrderRequestDto request) {
+    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody @Valid CreateOrderRequestDto request) {
         OrderResponseDto response = orderService.createOrder(request);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);

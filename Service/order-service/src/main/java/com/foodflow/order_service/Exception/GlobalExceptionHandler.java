@@ -99,6 +99,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
+
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                message,
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGenericException(Exception e) {
         ErrorResponseDto responseDto = new ErrorResponseDto(
