@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderItemRequest {
+public class OrderItemRequestDto {
     private Long menuItemId;
     private Integer quantity;
 }

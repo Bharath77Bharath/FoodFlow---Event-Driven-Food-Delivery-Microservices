@@ -3,19 +3,23 @@ package com.foodflow.order_service.Dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+public class RestaurantResponseDto {
+
     private Long id;
     private String name;
-    private String email;
+    private String description;
+    private String address;
+    private String city;
     private String phone;
-    private String userRole;
+    private String email;
+    private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
 }

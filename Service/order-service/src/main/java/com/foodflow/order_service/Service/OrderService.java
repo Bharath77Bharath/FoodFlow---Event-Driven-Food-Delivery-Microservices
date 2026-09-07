@@ -26,17 +26,17 @@ public class OrderService {
     private final UserServiceClient userServiceClient;
     private final RestaurantServiceClient restaurantServiceClient;
 
-    public OrderResponse createOrder(CreateOrderRequest request) {
+    public OrderResponseDto createOrder(CreateOrderRequestDto request) {
 
-        UserResponse userResponse = getUser(request.getUserId());
+        UserResponseDto userResponse = getUser(request.getUserId());
 
-        RestaurantResponse restaurantResponse = getRestaurant(request.getRestaurantId());
+        RestaurantResponseDto restaurantResponse = getRestaurant(request.getRestaurantId());
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for(OrderItemRequest itemRequest : request.getItems()) {
-            MenuItemResponse menuItemResponse = getMenuItem(itemRequest.getMenuItemId());
+        for(OrderItemRequestDto itemRequest : request.getItems()) {
+            MenuItemResponseDto menuItemResponse = getMenuItem(itemRequest.getMenuItemId());
 
             if(!menuItemResponse.getRestaurantId().equals(request.getRestaurantId())) {
                 throw new InvalidOrderException("Menu item does not belong to the selected restaurant");
@@ -77,9 +77,51 @@ public class OrderService {
         return convertOrderToOrderResponse(savedOrder);
     }
 
+    public OrderResponseDto getOrderById(Long orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(() -> new OrderNotFoundException("Order not found with id: "+orderId));
+
+        return convertOrderToOrderResponse(order);
+    }
+
+    public List<OrderResponseDto> getOrderByUser(Long userId) {
+        getUser(userId);
+        List<Order> orderList = orderRepo.findByUserId(userId);
+        List<OrderResponseDto> orderResponseList = new ArrayList<>();
+        for(Order order : orderList) {
+            orderResponseList.add(convertOrderToOrderResponse(order));
+        }
+
+        return orderResponseList;
+    }
+
+    public OrderStatusDto getOrderStatus(Long orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(() -> new OrderNotFoundException("Order not found with id: "+orderId));
+
+        return new OrderStatusDto(order.getId(),order.getStatus());
+    }
+
+    public OrderResponseDto updateOrderStatus(Long orderId, UpdateOrderStatusDto responseDto) {
+        Order order = orderRepo.findById(orderId).orElseThrow(() -> new OrderNotFoundException("Order not found with id: "+orderId));
+
+        OrderStatus currentStatus = order.getStatus();
+        OrderStatus newStatus = responseDto.getStatus();
+
+        if(!isValidOrderStatusTransition(currentStatus, newStatus)) {
+            throw new InvalidOrderStatusException(
+                    "Cannot change order status from "+currentStatus+" to "+newStatus
+            );
+        }
+
+        order.setStatus(newStatus);
+
+        Order savedOrder = orderRepo.save(order);
+
+        return convertOrderToOrderResponse(savedOrder);
+    }
+
     //Helper Methods
-    private OrderResponse convertOrderToOrderResponse(Order order) {
-        OrderResponse orderResponse = new OrderResponse();
+    private OrderResponseDto convertOrderToOrderResponse(Order order) {
+        OrderResponseDto orderResponse = new OrderResponseDto();
 
         orderResponse.setId(order.getId());
         orderResponse.setUserId(order.getUserId());
@@ -88,10 +130,10 @@ public class OrderService {
         orderResponse.setStatus(order.getStatus());
         orderResponse.setCreatedAt(order.getCreatedAt());
 
-        List<OrderItemResponse> itemResponses = new ArrayList<>();
+        List<OrderItemResponseDto> itemResponses = new ArrayList<>();
 
         for(OrderItem orderItem : order.getItems()) {
-            OrderItemResponse item = new OrderItemResponse();
+            OrderItemResponseDto item = new OrderItemResponseDto();
 
             item.setMenuItemId(orderItem.getMenuItemId());
             item.setQuantity(orderItem.getQuantity());
@@ -106,7 +148,7 @@ public class OrderService {
         return orderResponse;
     }
 
-    private UserResponse getUser(Long userId) {
+    private UserResponseDto getUser(Long userId) {
         try {
             return userServiceClient.getUserById(userId);
         } catch (FeignException.NotFound e) {
@@ -118,7 +160,7 @@ public class OrderService {
         }
     }
 
-    private RestaurantResponse getRestaurant(Long restaurantId) {
+    private RestaurantResponseDto getRestaurant(Long restaurantId) {
         try {
             return restaurantServiceClient.getRestaurantById(restaurantId);
         } catch (FeignException.NotFound e) {
@@ -130,7 +172,7 @@ public class OrderService {
         }
     }
 
-    private MenuItemResponse getMenuItem(Long menuItemId) {
+    private MenuItemResponseDto getMenuItem(Long menuItemId) {
         try {
             return restaurantServiceClient.getMenuItemById(menuItemId);
         } catch (FeignException.NotFound e) {
@@ -140,5 +182,22 @@ public class OrderService {
         } catch (FeignException e) {
             throw new ServiceUnavailableException("Unable to connect with restaurant service");
         }
+    }
+
+    private boolean isValidOrderStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
+        if(currentStatus == OrderStatus.PLACED) {
+            return newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
+        }
+        if(currentStatus == OrderStatus.CONFIRMED) {
+            return newStatus == OrderStatus.PREPARING || newStatus == OrderStatus.CANCELLED;
+        }
+        if(currentStatus == OrderStatus.PREPARING) {
+            return newStatus == OrderStatus.OUT_FOR_DELIVERY;
+        }
+        if(currentStatus == OrderStatus.OUT_FOR_DELIVERY) {
+            return newStatus == OrderStatus.DELIVERED;
+        }
+
+        return false;
     }
 }

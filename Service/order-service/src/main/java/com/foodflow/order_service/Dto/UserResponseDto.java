@@ -9,17 +9,12 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RestaurantResponse {
-
+public class UserResponseDto {
     private Long id;
     private String name;
-    private String description;
-    private String address;
-    private String city;
-    private String phone;
     private String email;
-    private Boolean active;
+    private String phone;
+    private String userRole;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }

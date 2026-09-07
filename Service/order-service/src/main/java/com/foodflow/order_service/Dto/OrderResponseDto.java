@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderResponse {
+public class OrderResponseDto {
 
     private Long id;
 
@@ -26,5 +26,5 @@ public class OrderResponse {
 
     private LocalDateTime createdAt;
 
-    private List<OrderItemResponse> items;
+    private List<OrderItemResponseDto> items;
 }

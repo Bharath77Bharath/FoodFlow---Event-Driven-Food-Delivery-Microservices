@@ -77,6 +77,28 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleOrderNotFoundException(OrderNotFoundException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidOrderStatusException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidOrderStatus(InvalidOrderStatusException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGenericException(Exception e) {
         ErrorResponseDto responseDto = new ErrorResponseDto(

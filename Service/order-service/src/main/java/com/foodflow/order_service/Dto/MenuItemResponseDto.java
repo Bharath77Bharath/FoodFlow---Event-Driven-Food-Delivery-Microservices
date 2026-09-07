@@ -4,13 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateOrderRequest {
-    private Long userId;
+public class MenuItemResponseDto {
+
+    private Long id;
     private Long restaurantId;
-    private List<OrderItemRequest> items;
+    private String name;
+    private String description;
+    private Double price;
+    private Boolean available;
+
 }

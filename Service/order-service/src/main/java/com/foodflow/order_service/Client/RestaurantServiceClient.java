@@ -1,9 +1,8 @@
 package com.foodflow.order_service.Client;
 
-import com.foodflow.order_service.Dto.MenuItemResponse;
-import com.foodflow.order_service.Dto.RestaurantResponse;
+import com.foodflow.order_service.Dto.MenuItemResponseDto;
+import com.foodflow.order_service.Dto.RestaurantResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -11,8 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface RestaurantServiceClient {
 
     @GetMapping("/api/v1/restaurants/{id}")
-    public RestaurantResponse getRestaurantById(@PathVariable Long id);
+    public RestaurantResponseDto getRestaurantById(@PathVariable Long id);
 
     @GetMapping("/api/v1/menu-items/{menuItemId}")
-    public MenuItemResponse getMenuItemById(@PathVariable Long menuItemId);
+    public MenuItemResponseDto getMenuItemById(@PathVariable Long menuItemId);
 }
