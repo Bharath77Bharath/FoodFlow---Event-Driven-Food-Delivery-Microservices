@@ -1,4 +1,4 @@
-package com.foodflow.paymentservice.Exception;
+package com.foodflow.delivery_service.Exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(PaymentNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handlePaymentNotFound(PaymentNotFoundException e) {
+    @ExceptionHandler(DeliveryPartnerNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleDeliveryPartnerNotFound(DeliveryPartnerNotFoundException e) {
         ErrorResponseDto responseDto = new ErrorResponseDto(
                 e.getMessage(),
                 HttpStatus.NOT_FOUND.value(),
@@ -22,30 +22,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(PaymentAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponseDto> handlePaymentAlreadyExists(PaymentAlreadyExistsException e) {
-        ErrorResponseDto responseDto = new ErrorResponseDto(
-                e.getMessage(),
-                HttpStatus.CONFLICT.value(),
-                LocalDateTime.now()
-        );
-
-        return new ResponseEntity<>(responseDto, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(PaymentAlreadyProcessedException.class)
-    public ResponseEntity<ErrorResponseDto> handlePaymentAlreadyProcessed(PaymentAlreadyProcessedException e) {
-        ErrorResponseDto responseDto = new ErrorResponseDto(
-                e.getMessage(),
-                HttpStatus.CONFLICT.value(),
-                LocalDateTime.now()
-        );
-
-        return new ResponseEntity<>(responseDto, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleOrderNotFound(OrderNotFoundException e) {
+    @ExceptionHandler(DeliveryNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleDeliveryNotFound(DeliveryNotFoundException e) {
         ErrorResponseDto responseDto = new ErrorResponseDto(
                 e.getMessage(),
                 HttpStatus.NOT_FOUND.value(),
@@ -55,8 +33,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(InvalidOrderStatusException.class)
-    public ResponseEntity<ErrorResponseDto> handleInvalidOrderStatus(InvalidOrderStatusException e) {
+    @ExceptionHandler(DuplicateDeliveryPartnerException.class)
+    public ResponseEntity<ErrorResponseDto> handleDuplicateDeliveryPartner(DuplicateDeliveryPartnerException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidDeliveryStatusException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidDeliveryStatus(InvalidDeliveryStatusException e) {
         ErrorResponseDto responseDto = new ErrorResponseDto(
                 e.getMessage(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -64,6 +53,28 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoAvailablePartnerException.class)
+    public ResponseEntity<ErrorResponseDto> handleNoAvailablePartnerException(NoAvailablePartnerException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DuplicateDeliveryException.class)
+    public ResponseEntity<ErrorResponseDto> handleDuplicateDelivery(DuplicateDeliveryException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
