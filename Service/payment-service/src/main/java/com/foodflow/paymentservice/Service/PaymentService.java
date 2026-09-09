@@ -7,6 +7,8 @@ import com.foodflow.paymentservice.Dto.PaymentResponse;
 import com.foodflow.paymentservice.Entity.Payment;
 import com.foodflow.paymentservice.Entity.PaymentStatus;
 import com.foodflow.paymentservice.Exception.*;
+import com.foodflow.paymentservice.Gateway.PaymentGateway;
+import com.foodflow.paymentservice.Gateway.PaymentGatewayResponse;
 import com.foodflow.paymentservice.Repository.PaymentRepo;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class PaymentService {
 
     private final PaymentRepo paymentRepo;
     private final OrderServiceClient orderServiceClient;
+    private final PaymentGateway paymentGateway;
 
     @Transactional
     public PaymentResponse createPayment(PaymentRequest request) {
@@ -55,8 +58,17 @@ public class PaymentService {
             throw new PaymentAlreadyProcessedException("Payment is already processed");
         }
 
-        payment.setStatus(PaymentStatus.SUCCESS);
-        payment.setTransactionId("TXN-"+ UUID.randomUUID());
+        PaymentGatewayResponse paymentResponse = paymentGateway.processPayment(payment);
+
+        if(paymentResponse.isSuccess()) {
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setTransactionId(paymentResponse.getTransactionId());
+            payment.setFailureReason(null);
+        } else {
+            payment.setStatus(PaymentStatus.FAILED);
+            payment.setTransactionId(null);
+            payment.setFailureReason(paymentResponse.getFailureReason());
+        }
 
         Payment updatedPayment = paymentRepo.save(payment);
 
