@@ -6,7 +6,9 @@ import com.foodflow.order_service.Dto.*;
 import com.foodflow.order_service.Entity.Order;
 import com.foodflow.order_service.Entity.OrderItem;
 import com.foodflow.order_service.Entity.OrderStatus;
+import com.foodflow.common.Event.OrderCreatedEvent;
 import com.foodflow.order_service.Exception.*;
+import com.foodflow.order_service.Kafka.KafkaProducerService;
 import com.foodflow.order_service.Repository.OrderRepo;
 import feign.FeignException;
 import feign.RetryableException;
@@ -25,6 +27,7 @@ public class OrderService {
     private final OrderRepo orderRepo;
     private final UserServiceClient userServiceClient;
     private final RestaurantServiceClient restaurantServiceClient;
+    private final KafkaProducerService kafkaProducerService;
 
     public OrderResponseDto createOrder(CreateOrderRequestDto request) {
 
@@ -73,6 +76,15 @@ public class OrderService {
         order.setItems(orderItems);
 
         Order savedOrder = orderRepo.save(order);
+
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getRestaurantId(),
+                savedOrder.getTotalAmount()
+        );
+
+        kafkaProducerService.publishOrderCreated(event);
 
         return convertOrderToOrderResponse(savedOrder);
     }

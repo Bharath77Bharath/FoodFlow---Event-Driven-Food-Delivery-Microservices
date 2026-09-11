@@ -6,9 +6,11 @@ import com.foodflow.paymentservice.Dto.PaymentRequest;
 import com.foodflow.paymentservice.Dto.PaymentResponse;
 import com.foodflow.paymentservice.Entity.Payment;
 import com.foodflow.paymentservice.Entity.PaymentStatus;
+import com.foodflow.common.Event.*;
 import com.foodflow.paymentservice.Exception.*;
 import com.foodflow.paymentservice.Gateway.PaymentGateway;
 import com.foodflow.paymentservice.Gateway.PaymentGatewayResponse;
+import com.foodflow.paymentservice.Kafka.PaymentKafkaProducer;
 import com.foodflow.paymentservice.Repository.PaymentRepo;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class PaymentService {
     private final PaymentRepo paymentRepo;
     private final OrderServiceClient orderServiceClient;
     private final PaymentGateway paymentGateway;
+    private final PaymentKafkaProducer paymentKafkaProducer;
 
     @Transactional
     public PaymentResponse createPayment(PaymentRequest request) {
@@ -46,6 +49,15 @@ public class PaymentService {
         Payment payment = convertToPayment(request, responseDto);
 
         Payment savedPayment = paymentRepo.save(payment);
+
+        PaymentCreatedEvent event = new PaymentCreatedEvent(
+                savedPayment.getId(),
+                savedPayment.getOrderId(),
+                savedPayment.getUserId(),
+                savedPayment.getAmount()
+        );
+
+        paymentKafkaProducer.publishPaymentCreated(event);
 
         return convertToPaymentResponse(savedPayment);
     }
@@ -71,6 +83,26 @@ public class PaymentService {
         }
 
         Payment updatedPayment = paymentRepo.save(payment);
+
+        if(updatedPayment.getStatus() == PaymentStatus.SUCCESS) {
+            PaymentSuccessEvent event = new PaymentSuccessEvent(
+                    updatedPayment.getId(),
+                    updatedPayment.getOrderId(),
+                    updatedPayment.getUserId(),
+                    updatedPayment.getAmount()
+            );
+
+            paymentKafkaProducer.publishPaymentSuccess(event);
+        }
+
+        if(updatedPayment.getStatus() == PaymentStatus.FAILED) {
+            PaymentFailedEvent event = new PaymentFailedEvent(
+                    updatedPayment.getOrderId(),
+                    updatedPayment.getFailureReason()
+            );
+
+            paymentKafkaProducer.publishPaymentFailed(event);
+        }
 
         return convertToPaymentResponse(updatedPayment);
 

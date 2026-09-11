@@ -1,0 +1,9 @@
+com\foodflow\common\Event\FoodReadyEvent.class
+com\foodflow\common\Event\OrderAcceptedEvent.class
+com\foodflow\common\Event\EventEnvelope.class
+com\foodflow\common\Event\PaymentCreatedEvent.class
+com\foodflow\common\Event\OrderConfirmedEvent.class
+com\foodflow\common\Event\OrderCreatedEvent.class
+com\foodflow\common\Event\PaymentFailedEvent.class
+com\foodflow\common\Event\PaymentSuccessEvent.class
+com\foodflow\common\Event\EventType.class

@@ -19,8 +19,7 @@ public class OrderResponseDto {
     private Long userId;
 
     private Long restaurantId;
-
-    private BigDecimal totalAmount;
+     private BigDecimal totalAmount;
 
     private OrderStatus status;
 
