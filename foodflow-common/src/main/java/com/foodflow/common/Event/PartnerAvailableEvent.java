@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FoodReadyEvent {
+public class PartnerAvailableEvent {
 
-    private Long orderId;
-    private Long restaurantId;
-    private Long userId;
+    private Long deliveryPartnerId;
+
 }

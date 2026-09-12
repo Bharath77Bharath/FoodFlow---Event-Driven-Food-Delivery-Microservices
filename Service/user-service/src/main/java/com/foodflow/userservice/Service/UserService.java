@@ -20,7 +20,7 @@ import java.util.List;
 public class UserService {
     private final UserRepo userRepo;
 
-    @NonNull
+
     private UserResponse convertToUserResponse(User savedUser) {
         UserResponse response = new UserResponse();
 
@@ -28,6 +28,7 @@ public class UserService {
         response.setName(savedUser.getName());
         response.setEmail(savedUser.getEmail());
         response.setPhone(savedUser.getPhone());
+        response.setAddress(savedUser.getAddress());
         response.setUserRole(savedUser.getRole());
         response.setCreatedAt(savedUser.getCreatedAt());
         response.setUpdatedAt(savedUser.getUpdatedAt());
@@ -46,6 +47,7 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(request.getPassword());
+        user.setAddress(request.getAddress());
         user.setRole(UserRole.CUSTOMER);
 
         User savedUser = userRepo.save(user);
@@ -78,6 +80,7 @@ public class UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
 
         User updatedUser = userRepo.save(user);
 

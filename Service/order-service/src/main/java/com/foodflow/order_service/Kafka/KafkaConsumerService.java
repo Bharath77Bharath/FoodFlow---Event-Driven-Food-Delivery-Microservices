@@ -120,6 +120,66 @@ public class KafkaConsumerService {
         }
     }
 
+    @KafkaListener(
+            topics = "delivery-events",
+            groupId = "order-service"
+    )
+    public void consumeDeliveryEvent(EventEnvelope envelope) {
+
+        log.info(
+                "Received delivery event: eventId={}, eventType={}, source={}",
+                envelope.getEventId(),
+                envelope.getEventType(),
+                envelope.getSource()
+        );
+
+        if (EventType.OUT_FOR_DELIVERY.name()
+                .equals(envelope.getEventType())) {
+
+            OutForDeliveryEvent event =
+                    objectMapper.convertValue(
+                            envelope.getData(),
+                            OutForDeliveryEvent.class
+                    );
+
+            log.info(
+                    "Received OutForDeliveryEvent: orderId={}, deliveryId={}, partnerId={}",
+                    event.getOrderId(),
+                    event.getDeliveryId(),
+                    event.getDeliveryPartnerId()
+            );
+
+            handleOutForDelivery(event);
+
+        }
+
+        else if (EventType.DELIVERED.name().equals(envelope.getEventType())) {
+
+            DeliveredEvent event =
+                    objectMapper.convertValue(
+                            envelope.getData(),
+                            DeliveredEvent.class
+                    );
+
+            log.info(
+                    "Received DeliveredEvent: orderId={}, deliveryId={}, partnerId={}",
+                    event.getOrderId(),
+                    event.getDeliveryId(),
+                    event.getDeliveryPartnerId()
+            );
+
+            handleDelivered(event);
+        }
+
+        else {
+
+            log.info(
+                    "Order Service ignoring delivery event type: {}",
+                    envelope.getEventType()
+            );
+        }
+    }
+
 
 
 
@@ -297,6 +357,63 @@ public class KafkaConsumerService {
 
         log.info(
                 "Order {} status changed: PREPARING -> READY_FOR_PICKUP",
+                order.getId()
+        );
+    }
+
+    private void handleOutForDelivery(OutForDeliveryEvent event) {
+        Order order = orderRepo.findById(event.getOrderId())
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + event.getOrderId()
+                        )
+                );
+
+        if (order.getStatus() != OrderStatus.READY_FOR_PICKUP) {
+
+            log.warn(
+                    "Order {} is not in READY_FOR_PICKUP status. Current status: {}",
+                    order.getId(),
+                    order.getStatus()
+            );
+
+            return;
+        }
+
+        order.setStatus(OrderStatus.OUT_FOR_DELIVERY);
+        orderRepo.save(order);
+
+        log.info(
+                "Order {} status changed: READY_FOR_PICKUP -> OUT_FOR_DELIVERY",
+                order.getId()
+        );
+    }
+
+    private void handleDelivered(DeliveredEvent event) {
+
+        Order order = orderRepo.findById(event.getOrderId())
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + event.getOrderId()
+                        )
+                );
+
+        if (order.getStatus() != OrderStatus.OUT_FOR_DELIVERY) {
+
+            log.warn(
+                    "Order {} is not in OUT_FOR_DELIVERY status. Current status: {}",
+                    order.getId(),
+                    order.getStatus()
+            );
+
+            return;
+        }
+
+        order.setStatus(OrderStatus.DELIVERED);
+        orderRepo.save(order);
+
+        log.info(
+                "Order {} status changed: OUT_FOR_DELIVERY -> DELIVERED",
                 order.getId()
         );
     }

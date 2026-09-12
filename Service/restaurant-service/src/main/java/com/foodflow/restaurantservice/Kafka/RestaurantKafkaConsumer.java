@@ -83,7 +83,8 @@ public class RestaurantKafkaConsumer {
                 FoodReadyEvent foodReadyEvent =
                         new FoodReadyEvent(
                                 event.getOrderId(),
-                                event.getRestaurantId()
+                                event.getRestaurantId(),
+                                event.getUserId()
                         );
 
                 restaurantKafkaProducer.publishFoodReady(foodReadyEvent);

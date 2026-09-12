@@ -1,15 +1,18 @@
 package com.foodflow.delivery_service.Service;
 
+import com.foodflow.common.Event.PartnerAvailableEvent;
 import com.foodflow.delivery_service.Dto.DeliveryPartnerRequestDto;
 import com.foodflow.delivery_service.Dto.DeliveryPartnerResponseDto;
 import com.foodflow.delivery_service.Entity.DeliveryPartner;
 import com.foodflow.delivery_service.Entity.DeliveryPartnerStatus;
 import com.foodflow.delivery_service.Exception.DeliveryPartnerNotFoundException;
 import com.foodflow.delivery_service.Exception.DuplicateDeliveryPartnerException;
+import com.foodflow.delivery_service.Kafka.DeliveryKafkaProducer;
 import com.foodflow.delivery_service.Repository.DeliveryPartnerRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -17,6 +20,7 @@ import java.util.List;
 public class DeliveryPartnerService {
 
     private final DeliveryPartnerRepo deliveryPartnerRepo;
+    private final DeliveryKafkaProducer deliveryKafkaProducer;
 
     public DeliveryPartnerResponseDto createPartner(DeliveryPartnerRequestDto request) {
 
@@ -83,7 +87,20 @@ public class DeliveryPartnerService {
         DeliveryPartner partner = deliveryPartnerRepo.findById(partnerId).orElseThrow(() -> new DeliveryPartnerNotFoundException("Delivery partner not found with id: "+partnerId));
 
         partner.setStatus(status);
+
+        if (status == DeliveryPartnerStatus.AVAILABLE) {
+            partner.setAvailableSince(LocalDateTime.now());
+        } else {
+            partner.setAvailableSince(null);
+        }
+
         DeliveryPartner updatedPartner = deliveryPartnerRepo.save(partner);
+
+        if(status == DeliveryPartnerStatus.AVAILABLE) {
+            PartnerAvailableEvent availableEvent = new PartnerAvailableEvent(updatedPartner.getId());
+
+            deliveryKafkaProducer.publishPartnerAvailable(availableEvent);
+        }
 
         return convertToDeliveryPartnerResponse(updatedPartner);
     }

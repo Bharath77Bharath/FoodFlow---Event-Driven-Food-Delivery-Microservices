@@ -37,6 +37,9 @@ public class DeliveryPartner {
     @Column(nullable = false)
     private DeliveryPartnerStatus status;
 
+    @Column
+    private LocalDateTime availableSince;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

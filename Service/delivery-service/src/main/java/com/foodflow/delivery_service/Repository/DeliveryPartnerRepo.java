@@ -20,4 +20,6 @@ public interface DeliveryPartnerRepo extends JpaRepository<DeliveryPartner, Long
     boolean existsByPhone(String phone);
 
     boolean existsByVehicleNumber(String vehicleNumber);
+
+    Optional<DeliveryPartner> findFirstByStatusOrderByAvailableSinceAsc(DeliveryPartnerStatus status);
 }

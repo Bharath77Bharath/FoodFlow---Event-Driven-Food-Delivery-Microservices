@@ -1,12 +1,18 @@
 package com.foodflow.delivery_service.Service;
 
+import com.foodflow.common.Event.DeliveryAssignedEvent;
+import com.foodflow.delivery_service.Client.RestaurantServiceClient;
+import com.foodflow.delivery_service.Client.UserServiceClient;
 import com.foodflow.delivery_service.Dto.DeliveryRequestDto;
 import com.foodflow.delivery_service.Dto.DeliveryResponseDto;
+import com.foodflow.delivery_service.Dto.RestaurantResponse;
+import com.foodflow.delivery_service.Dto.UserResponse;
 import com.foodflow.delivery_service.Entity.Delivery;
 import com.foodflow.delivery_service.Entity.DeliveryPartner;
 import com.foodflow.delivery_service.Entity.DeliveryPartnerStatus;
 import com.foodflow.delivery_service.Entity.DeliveryStatus;
 import com.foodflow.delivery_service.Exception.*;
+import com.foodflow.delivery_service.Kafka.DeliveryKafkaProducer;
 import com.foodflow.delivery_service.Repository.DeliveryPartnerRepo;
 import com.foodflow.delivery_service.Repository.DeliveryRepo;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +28,10 @@ public class DeliveryService {
 
     private final DeliveryRepo deliveryRepo;
     private final DeliveryPartnerRepo deliveryPartnerRepo;
+    private final UserServiceClient userServiceClient;
+    private final RestaurantServiceClient restaurantServiceClient;
+    private final DeliveryKafkaProducer deliveryKafkaProducer;
+    private final DeliverySimulationService deliverySimulationService;
 
     @Transactional
     public DeliveryResponseDto createDelivery(DeliveryRequestDto request) {
@@ -90,6 +100,43 @@ public class DeliveryService {
 
     }
 
+    public DeliveryResponseDto createDeliveryFromFoodReady(Long orderId, Long restaurantId, Long userId) {
+
+        if(deliveryRepo.existsByOrderId(orderId)) {
+            throw new DuplicateDeliveryException("Delivery already exists for order id: "+orderId);
+        }
+
+        String deliveryAddress = getCustomerAddress(userId);
+        String pickupAddress = getRestaurantAddress(restaurantId);
+        DeliveryPartner partner = findAvailablePartner();
+
+        Delivery delivery = new Delivery();
+
+        delivery.setOrderId(orderId);
+        delivery.setDeliveryPartnerId(partner.getId());
+        delivery.setDeliveryAddress(deliveryAddress);
+        delivery.setPickupAddress(pickupAddress);
+
+        Delivery savedDelivery = deliveryRepo.save(delivery);
+
+        DeliveryAssignedEvent event = new DeliveryAssignedEvent(
+                savedDelivery.getId(),
+                savedDelivery.getOrderId(),
+                savedDelivery.getDeliveryPartnerId()
+        );
+
+        deliveryKafkaProducer.publishDeliveryAssigned(event);
+
+        partner.setStatus(DeliveryPartnerStatus.BUSY);
+        partner.setAvailableSince(null);
+
+        deliveryPartnerRepo.save(partner);
+
+        deliverySimulationService.simulateDelivery(event.getDeliveryId());
+
+        return convertToDeliveryResponse(savedDelivery);
+    }
+
     //helper methods
 
     private Delivery convertToDelivery(DeliveryRequestDto request) {
@@ -130,5 +177,30 @@ public class DeliveryService {
         }
 
         return false;
+    }
+
+    private DeliveryPartner findAvailablePartner() {
+
+        return deliveryPartnerRepo
+                .findFirstByStatusOrderByAvailableSinceAsc(
+                        DeliveryPartnerStatus.AVAILABLE
+                )
+                .orElseThrow(() ->
+                        new NoAvailablePartnerException(
+                                "No delivery partner is currently available"
+                        )
+                );
+    }
+
+    private String getCustomerAddress(Long userId) {
+        UserResponse response = userServiceClient.getUserById(userId);
+
+        return response.getAddress();
+    }
+
+    private String getRestaurantAddress(Long restaurantId) {
+        RestaurantResponse response = restaurantServiceClient.getRestaurantById(restaurantId);
+
+        return response.getAddress();
     }
 }

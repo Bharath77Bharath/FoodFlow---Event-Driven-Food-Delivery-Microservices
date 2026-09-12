@@ -29,4 +29,7 @@ public class CreateUserRequest {
             message = "Phone number should contain exactly 10 digits"
     )
     private String phone;
+
+    @NotBlank(message = "Address is required")
+    private String address;
 }

@@ -5,11 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class FoodReadyEvent {
-
+@AllArgsConstructor
+public class DeliveryAssignedEvent {
+    private Long deliveryId;
     private Long orderId;
-    private Long restaurantId;
-    private Long userId;
+    private Long deliveryPartnerId;
 }
