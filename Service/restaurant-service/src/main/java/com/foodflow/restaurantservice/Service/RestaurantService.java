@@ -1,5 +1,6 @@
 package com.foodflow.restaurantservice.Service;
 
+import com.foodflow.restaurantservice.Client.UserServiceClient;
 import com.foodflow.restaurantservice.Dto.RestaurantRequest;
 import com.foodflow.restaurantservice.Dto.RestaurantResponse;
 import com.foodflow.restaurantservice.Entity.Restaurant;
@@ -16,11 +17,13 @@ import java.util.List;
 public class RestaurantService {
 
     private final RestaurantRepo restaurantRepo;
+    private final UserServiceClient userServiceClient;
 
     public RestaurantResponse convertRestaurantResponse(Restaurant restaurant) {
         RestaurantResponse response = new RestaurantResponse();
 
         response.setId(restaurant.getId());
+        response.setOwnerId(restaurant.getOwnerId());
         response.setName(restaurant.getName());
         response.setDescription(restaurant.getDescription());
         response.setAddress(restaurant.getAddress());
@@ -35,8 +38,12 @@ public class RestaurantService {
     }
 
     public RestaurantResponse createRestaurant(RestaurantRequest request) {
+
+        userServiceClient.getUserById(request.getOwnerId());
+
         Restaurant restaurant = new Restaurant();
 
+        restaurant.setOwnerId(request.getOwnerId());
         restaurant.setName(request.getName());
         restaurant.setDescription(request.getDescription());
         restaurant.setAddress(request.getAddress());

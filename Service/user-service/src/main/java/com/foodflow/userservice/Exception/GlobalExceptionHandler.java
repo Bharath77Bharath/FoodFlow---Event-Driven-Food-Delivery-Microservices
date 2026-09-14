@@ -44,4 +44,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto,HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(AdminRegistrationBlockedException.class)
+    public ResponseEntity<ErrorResponseDto> handleAdminRegistrationBlocked(AdminRegistrationBlockedException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto,HttpStatus.FORBIDDEN);
+    }
+
 }

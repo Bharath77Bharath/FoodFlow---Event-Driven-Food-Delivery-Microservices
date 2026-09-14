@@ -5,6 +5,7 @@ import com.foodflow.userservice.Dto.UpdateUserRequest;
 import com.foodflow.userservice.Dto.UserResponse;
 import com.foodflow.userservice.Entity.User;
 import com.foodflow.userservice.Entity.UserRole;
+import com.foodflow.userservice.Exception.AdminRegistrationBlockedException;
 import com.foodflow.userservice.Exception.EmailAlreadyExistsException;
 import com.foodflow.userservice.Exception.UserNotFoundException;
 import com.foodflow.userservice.Repository.UserRepo;
@@ -41,6 +42,10 @@ public class UserService {
             throw new EmailAlreadyExistsException("Email already exists!");
         }
 
+        if (request.getUserRole() == UserRole.ADMIN) {
+            throw new AdminRegistrationBlockedException("Admin registration is not allowed");
+        }
+
         User user = new User();
 
         user.setName(request.getName());
@@ -48,7 +53,7 @@ public class UserService {
         user.setPhone(request.getPhone());
         user.setPassword(request.getPassword());
         user.setAddress(request.getAddress());
-        user.setRole(UserRole.CUSTOMER);
+        user.setRole(request.getUserRole());
 
         User savedUser = userRepo.save(user);
 

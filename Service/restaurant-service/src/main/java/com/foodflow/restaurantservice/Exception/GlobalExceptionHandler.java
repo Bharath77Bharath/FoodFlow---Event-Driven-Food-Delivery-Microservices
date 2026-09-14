@@ -1,5 +1,6 @@
 package com.foodflow.restaurantservice.Exception;
 
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -42,6 +43,18 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(responseDto,HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ResponseEntity<ErrorResponseDto> handleFeignNotFound(FeignException.NotFound ex) {
+
+        ErrorResponseDto error = new ErrorResponseDto(
+                "User not found!",
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
 }
