@@ -3,9 +3,13 @@ C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\c
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\EventEnvelope.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\EventType.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\FoodReadyEvent.java
+C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\InventoryReleasedEvent.java
+C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\InventoryReservationFailedEvent.java
+C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\InventoryReservedEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\OrderAcceptedEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\OrderConfirmedEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\OrderCreatedEvent.java
+C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\OrderItemEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\OutForDeliveryEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\PartnerAvailableEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\PaymentCreatedEvent.java

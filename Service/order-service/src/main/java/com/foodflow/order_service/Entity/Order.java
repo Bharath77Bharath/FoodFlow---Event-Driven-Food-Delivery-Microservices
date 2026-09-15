@@ -37,6 +37,12 @@ public class Order {
     private OrderStatus status;
 
     @Column(nullable = false)
+    private boolean paymentSuccessful;
+
+    @Column(nullable = false)
+    private boolean inventoryReserved;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @OneToMany(

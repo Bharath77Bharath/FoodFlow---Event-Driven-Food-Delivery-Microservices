@@ -1,12 +1,16 @@
 com\foodflow\common\Event\DeliveredEvent.class
 com\foodflow\common\Event\FoodReadyEvent.class
+com\foodflow\common\Event\InventoryReservedEvent.class
+com\foodflow\common\Event\InventoryReleasedEvent.class
 com\foodflow\common\Event\PaymentCreatedEvent.class
 com\foodflow\common\Event\PaymentSuccessEvent.class
+com\foodflow\common\Event\InventoryReservationFailedEvent.class
 com\foodflow\common\Event\OrderAcceptedEvent.class
 com\foodflow\common\Event\EventEnvelope.class
 com\foodflow\common\Event\PartnerAvailableEvent.class
 com\foodflow\common\Event\OrderConfirmedEvent.class
 com\foodflow\common\Event\OrderCreatedEvent.class
+com\foodflow\common\Event\OrderItemEvent.class
 com\foodflow\common\Event\OutForDeliveryEvent.class
 com\foodflow\common\Event\PaymentFailedEvent.class
 com\foodflow\common\Event\DeliveryAssignedEvent.class

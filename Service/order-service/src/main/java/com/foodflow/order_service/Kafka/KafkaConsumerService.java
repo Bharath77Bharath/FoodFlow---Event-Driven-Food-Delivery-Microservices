@@ -180,6 +180,80 @@ public class KafkaConsumerService {
         }
     }
 
+    @KafkaListener(
+            topics = "inventory-events",
+            groupId = "order-service"
+    )
+    public void consumeInventoryEvent(EventEnvelope envelope) {
+
+        log.info(
+                "Received inventory event: eventId={}, eventType={}, source={}",
+                envelope.getEventId(),
+                envelope.getEventType(),
+                envelope.getSource()
+        );
+
+        if (EventType.INVENTORY_RESERVED.name()
+                .equals(envelope.getEventType())) {
+
+            InventoryReservedEvent event =
+                    objectMapper.convertValue(
+                            envelope.getData(),
+                            InventoryReservedEvent.class
+                    );
+
+            log.info(
+                    "Received InventoryReservedEvent: orderId={}",
+                    event.getOrderId()
+            );
+
+            handleInventoryReserved(event);
+        }
+
+        else if (EventType.INVENTORY_RESERVATION_FAILED.name()
+                .equals(envelope.getEventType())) {
+
+            InventoryReservationFailedEvent event =
+                    objectMapper.convertValue(
+                            envelope.getData(),
+                            InventoryReservationFailedEvent.class
+                    );
+
+            log.info(
+                    "Received InventoryReservationFailedEvent: orderId={}, reason={}",
+                    event.getOrderId(),
+                    event.getReason()
+            );
+
+            handleInventoryReservationFailed(event);
+        }
+
+        else if (EventType.INVENTORY_RELEASED.name()
+                .equals(envelope.getEventType())) {
+
+            InventoryReleasedEvent event =
+                    objectMapper.convertValue(
+                            envelope.getData(),
+                            InventoryReleasedEvent.class
+                    );
+
+            log.info(
+                    "Received InventoryReleasedEvent: orderId={}",
+                    event.getOrderId()
+            );
+
+            handleInventoryReleased(event);
+        }
+
+        else {
+
+            log.info(
+                    "Order Service ignoring inventory event type: {}",
+                    envelope.getEventType()
+            );
+        }
+    }
+
 
 
 
@@ -252,23 +326,37 @@ public class KafkaConsumerService {
             return;
         }
 
-        order.setStatus(OrderStatus.CONFIRMED);
-        orderRepo.save(order);
+        order.setPaymentSuccessful(true);
 
-        log.info(
-                "Order {} status changed: PAYMENT_PROCESSING -> CONFIRMED",
-                order.getId()
-        );
+        if (order.isInventoryReserved()) {
 
-        OrderConfirmedEvent confirmedEvent = new OrderConfirmedEvent(
-                order.getId(),
-                order.getUserId(),
-                order.getRestaurantId(),
-                order.getTotalAmount()
-        );
+            order.setStatus(OrderStatus.CONFIRMED);
+            orderRepo.save(order);
 
-        kafkaProducerService.publishOrderConfirmed(confirmedEvent);
+            log.info(
+                    "Order {} payment successful and inventory already reserved. " +
+                            "Status changed: PAYMENT_PROCESSING -> CONFIRMED",
+                    order.getId()
+            );
 
+            OrderConfirmedEvent confirmedEvent = new OrderConfirmedEvent(
+                    order.getId(),
+                    order.getUserId(),
+                    order.getRestaurantId(),
+                    order.getTotalAmount()
+            );
+
+            kafkaProducerService.publishOrderConfirmed(confirmedEvent);
+
+        } else {
+
+            orderRepo.save(order);
+
+            log.info(
+                    "Order {} payment successful. Waiting for inventory reservation.",
+                    order.getId()
+            );
+        }
     }
 
 
@@ -414,6 +502,109 @@ public class KafkaConsumerService {
 
         log.info(
                 "Order {} status changed: OUT_FOR_DELIVERY -> DELIVERED",
+                order.getId()
+        );
+    }
+
+    private void handleInventoryReserved(InventoryReservedEvent event) {
+
+        log.info(
+                "Received InventoryReservedEvent: orderId={}",
+                event.getOrderId()
+        );
+
+        Order order = orderRepo.findById(event.getOrderId())
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + event.getOrderId()
+                        )
+                );
+
+        order.setInventoryReserved(true);
+
+        if (order.isPaymentSuccessful()) {
+
+            order.setStatus(OrderStatus.CONFIRMED);
+            orderRepo.save(order);
+
+            log.info(
+                    "Order {} inventory reserved and payment already successful. " +
+                            "Status changed: PAYMENT_PROCESSING -> CONFIRMED",
+                    order.getId()
+            );
+
+            OrderConfirmedEvent confirmedEvent = new OrderConfirmedEvent(
+                    order.getId(),
+                    order.getUserId(),
+                    order.getRestaurantId(),
+                    order.getTotalAmount()
+            );
+
+            kafkaProducerService.publishOrderConfirmed(confirmedEvent);
+
+        } else {
+
+            orderRepo.save(order);
+
+            log.info(
+                    "Order {} inventory reserved. Waiting for payment success.",
+                    order.getId()
+            );
+        }
+    }
+
+    private void handleInventoryReservationFailed(InventoryReservationFailedEvent event) {
+
+        log.info(
+                "Handling inventory reservation failure: orderId={}, reason={}",
+                event.getOrderId(),
+                event.getReason()
+        );
+
+        Order order = orderRepo.findById(event.getOrderId())
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + event.getOrderId()
+                        )
+                );
+
+        if (order.getStatus() != OrderStatus.PAYMENT_PROCESSING) {
+
+            log.warn(
+                    "Order {} is not in PAYMENT_PROCESSING status. Current status: {}",
+                    order.getId(),
+                    order.getStatus()
+            );
+
+            return;
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepo.save(order);
+
+        log.info(
+                "Order {} status changed: PAYMENT_PROCESSING -> CANCELLED " +
+                        "due to inventory reservation failure",
+                order.getId()
+        );
+    }
+
+    private void handleInventoryReleased(InventoryReleasedEvent event) {
+
+        log.info(
+                "Handling inventory release: orderId={}",
+                event.getOrderId()
+        );
+
+        Order order = orderRepo.findById(event.getOrderId())
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + event.getOrderId()
+                        )
+                );
+
+        log.info(
+                "Inventory reservations released for order {}",
                 order.getId()
         );
     }

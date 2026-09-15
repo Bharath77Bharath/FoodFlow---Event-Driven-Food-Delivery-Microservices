@@ -1,5 +1,7 @@
 package com.foodflow.order_service.Service;
 
+import com.foodflow.common.Event.OrderItemEvent;
+import com.foodflow.order_service.Client.InventoryServiceClient;
 import com.foodflow.order_service.Client.RestaurantServiceClient;
 import com.foodflow.order_service.Client.UserServiceClient;
 import com.foodflow.order_service.Dto.*;
@@ -28,6 +30,7 @@ public class OrderService {
     private final UserServiceClient userServiceClient;
     private final RestaurantServiceClient restaurantServiceClient;
     private final KafkaProducerService kafkaProducerService;
+    private final InventoryServiceClient inventoryServiceClient;
 
     public OrderResponseDto createOrder(CreateOrderRequestDto request) {
 
@@ -75,13 +78,50 @@ public class OrderService {
         }
         order.setItems(orderItems);
 
+        List<OrderItemEvent> availabilityItems = new ArrayList<>();
+
+        for (OrderItem orderItem : order.getItems()) {
+
+            availabilityItems.add(
+                    new OrderItemEvent(
+                            orderItem.getMenuItemId(),
+                            orderItem.getQuantity()
+                    )
+            );
+        }
+
+        InventoryAvailabilityRequest availabilityRequest =
+                new InventoryAvailabilityRequest(availabilityItems);
+
+        try {
+            inventoryServiceClient.checkAvailability(availabilityRequest);
+
+        } catch (FeignException.Conflict e) {
+            throw new InvalidOrderException(
+                    "Insufficient inventory for one or more items"
+            );
+        }
+
         Order savedOrder = orderRepo.save(order);
+
+        List<OrderItemEvent> eventItems = new ArrayList<>();
+
+        for (OrderItem orderItem : savedOrder.getItems()) {
+
+            eventItems.add(
+                    new OrderItemEvent(
+                            orderItem.getMenuItemId(),
+                            orderItem.getQuantity()
+                    )
+            );
+        }
 
         OrderCreatedEvent event = new OrderCreatedEvent(
                 savedOrder.getId(),
                 savedOrder.getUserId(),
                 savedOrder.getRestaurantId(),
-                savedOrder.getTotalAmount()
+                savedOrder.getTotalAmount(),
+                eventItems
         );
 
         kafkaProducerService.publishOrderCreated(event);
