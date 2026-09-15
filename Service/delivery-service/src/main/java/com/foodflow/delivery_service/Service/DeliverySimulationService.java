@@ -73,6 +73,8 @@ public class DeliverySimulationService {
                     new OutForDeliveryEvent(
                             delivery.getId(),
                             delivery.getOrderId(),
+                            delivery.getUserId(),
+                            delivery.getRestaurantId(),
                             delivery.getDeliveryPartnerId()
                     );
 
@@ -99,6 +101,8 @@ public class DeliverySimulationService {
                     new DeliveredEvent(
                             delivery.getId(),
                             delivery.getOrderId(),
+                            delivery.getUserId(),
+                            delivery.getRestaurantId(),
                             delivery.getDeliveryPartnerId()
                     );
 

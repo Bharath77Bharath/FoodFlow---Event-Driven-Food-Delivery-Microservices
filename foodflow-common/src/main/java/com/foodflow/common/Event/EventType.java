@@ -19,5 +19,7 @@ public enum EventType {
 
     DELIVERY_ASSIGNED,
     OUT_FOR_DELIVERY,
-    DELIVERED
+    DELIVERED,
+
+    REVIEW_CREATED
 }

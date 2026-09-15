@@ -10,5 +10,7 @@ import lombok.NoArgsConstructor;
 public class DeliveryAssignedEvent {
     private Long deliveryId;
     private Long orderId;
+    private Long userId;
+    private Long restaurantId;
     private Long deliveryPartnerId;
 }

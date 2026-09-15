@@ -113,6 +113,8 @@ public class DeliveryService {
         Delivery delivery = new Delivery();
 
         delivery.setOrderId(orderId);
+        delivery.setUserId(userId);
+        delivery.setRestaurantId(restaurantId);
         delivery.setDeliveryPartnerId(partner.getId());
         delivery.setDeliveryAddress(deliveryAddress);
         delivery.setPickupAddress(pickupAddress);
@@ -122,7 +124,10 @@ public class DeliveryService {
         DeliveryAssignedEvent event = new DeliveryAssignedEvent(
                 savedDelivery.getId(),
                 savedDelivery.getOrderId(),
+                savedDelivery.getUserId(),
+                savedDelivery.getRestaurantId(),
                 savedDelivery.getDeliveryPartnerId()
+
         );
 
         deliveryKafkaProducer.publishDeliveryAssigned(event);

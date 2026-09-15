@@ -24,6 +24,12 @@ public class Delivery {
     private Long orderId;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    private Long restaurantId;
+
+    @Column(nullable = false)
     private Long deliveryPartnerId;
 
     @Column(nullable = false)

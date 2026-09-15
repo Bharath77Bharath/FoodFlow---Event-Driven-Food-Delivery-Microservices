@@ -15,3 +15,4 @@ C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\c
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\PaymentCreatedEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\PaymentFailedEvent.java
 C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\PaymentSuccessEvent.java
+C:\Users\bhara\Projects\FoodFlow - Microservices\foodflow-common\src\main\java\com\foodflow\common\Event\ReviewCreatedEvent.java

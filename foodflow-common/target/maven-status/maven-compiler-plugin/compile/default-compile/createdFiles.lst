@@ -3,6 +3,7 @@ com\foodflow\common\Event\FoodReadyEvent.class
 com\foodflow\common\Event\InventoryReservedEvent.class
 com\foodflow\common\Event\InventoryReleasedEvent.class
 com\foodflow\common\Event\PaymentCreatedEvent.class
+com\foodflow\common\Event\ReviewCreatedEvent.class
 com\foodflow\common\Event\PaymentSuccessEvent.class
 com\foodflow\common\Event\InventoryReservationFailedEvent.class
 com\foodflow\common\Event\OrderAcceptedEvent.class
