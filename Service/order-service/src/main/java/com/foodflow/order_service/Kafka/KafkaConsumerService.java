@@ -363,8 +363,9 @@ public class KafkaConsumerService {
     private void handlePaymentFailed(PaymentFailedEvent event) {
 
         log.info(
-                "Received PaymentFailedEvent: orderId={}, reason={}",
+                "Received PaymentFailedEvent: orderId={}, userId={}, reason={}",
                 event.getOrderId(),
+                event.getUserId(),
                 event.getReason()
         );
 

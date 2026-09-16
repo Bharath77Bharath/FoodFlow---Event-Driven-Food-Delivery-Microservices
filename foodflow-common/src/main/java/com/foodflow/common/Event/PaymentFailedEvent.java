@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class PaymentFailedEvent {
 
     private Long orderId;
+    private Long userId;
     private String reason;
 
 }

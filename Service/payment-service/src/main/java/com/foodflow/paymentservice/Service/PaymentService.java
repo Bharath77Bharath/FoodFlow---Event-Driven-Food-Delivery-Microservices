@@ -98,6 +98,7 @@ public class PaymentService {
         if(updatedPayment.getStatus() == PaymentStatus.FAILED) {
             PaymentFailedEvent event = new PaymentFailedEvent(
                     updatedPayment.getOrderId(),
+                    updatedPayment.getUserId(),
                     updatedPayment.getFailureReason()
             );
 

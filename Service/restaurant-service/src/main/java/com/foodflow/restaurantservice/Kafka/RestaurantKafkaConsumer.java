@@ -53,6 +53,7 @@ public class RestaurantKafkaConsumer {
 
                 OrderAcceptedEvent acceptedEvent = new OrderAcceptedEvent(
                         event.getOrderId(),
+                        event.getUserId(),
                         event.getRestaurantId()
                 );
 

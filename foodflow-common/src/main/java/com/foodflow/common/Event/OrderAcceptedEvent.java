@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class OrderAcceptedEvent {
 
     private Long orderId;
+    private Long userId;
     private Long restaurantId;
 }
