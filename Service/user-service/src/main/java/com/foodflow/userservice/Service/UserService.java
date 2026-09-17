@@ -1,6 +1,6 @@
 package com.foodflow.userservice.Service;
 
-import com.foodflow.userservice.Dto.CreateUserRequest;
+import com.foodflow.userservice.Dto.RegisterRequest;
 import com.foodflow.userservice.Dto.UpdateUserRequest;
 import com.foodflow.userservice.Dto.UserResponse;
 import com.foodflow.userservice.Entity.User;
@@ -10,7 +10,7 @@ import com.foodflow.userservice.Exception.EmailAlreadyExistsException;
 import com.foodflow.userservice.Exception.UserNotFoundException;
 import com.foodflow.userservice.Repository.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepo userRepo;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
     private UserResponse convertToUserResponse(User savedUser) {
@@ -37,7 +38,7 @@ public class UserService {
         return response;
     }
 
-    public UserResponse createUser(CreateUserRequest request) {
+    public UserResponse createUser(RegisterRequest request) {
         if(userRepo.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists!");
         }
@@ -51,7 +52,7 @@ public class UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setPassword(request.getPassword());
+        user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
         user.setAddress(request.getAddress());
         user.setRole(request.getUserRole());
 

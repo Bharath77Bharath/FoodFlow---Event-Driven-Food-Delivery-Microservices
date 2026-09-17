@@ -1,6 +1,6 @@
 package com.foodflow.userservice.Controller;
 
-import com.foodflow.userservice.Dto.CreateUserRequest;
+import com.foodflow.userservice.Dto.RegisterRequest;
 import com.foodflow.userservice.Dto.UpdateUserRequest;
 import com.foodflow.userservice.Dto.UserResponse;
 import com.foodflow.userservice.Service.UserService;
@@ -19,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping()
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody RegisterRequest request) {
         UserResponse response = userService.createUser(request);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
