@@ -60,7 +60,7 @@ public class DeliveryPartnerController {
     }
 
     @PutMapping("/{partnerId}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @deliveryPartnerAuthorization.isOwner(#partnerId)")
     public ResponseEntity<DeliveryPartnerResponseDto> updatePartnerStatus(@PathVariable Long partnerId, @RequestParam DeliveryPartnerStatus status) {
         DeliveryPartnerResponseDto response = deliveryPartnerService.updatePartnerStatus(partnerId,status);
 
