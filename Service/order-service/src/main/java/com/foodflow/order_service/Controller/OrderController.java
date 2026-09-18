@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody @Valid CreateOrderRequestDto request) {
         OrderResponseDto response = orderService.createOrder(request);
 
@@ -27,6 +29,11 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
+    @PreAuthorize(
+            "hasRole('ADMIN') or " +
+                    "@orderAuthorization.isCustomerOwner(#orderId) or " +
+                    "@orderAuthorization.isRestaurantOwner(#orderId)"
+    )
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable Long orderId) {
         OrderResponseDto response = orderService.getOrderById(orderId);
 
@@ -34,6 +41,10 @@ public class OrderController {
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize(
+            "hasRole('ADMIN') or " +
+                    "(hasRole('CUSTOMER') and @orderAuthorization.isCurrentUser(#userId))"
+    )
     public ResponseEntity<List<OrderResponseDto>> getOrderByUser(@PathVariable Long userId) {
         List<OrderResponseDto> responses = orderService.getOrderByUser(userId);
 
@@ -41,6 +52,11 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/status")
+    @PreAuthorize(
+            "hasRole('ADMIN') or " +
+                    "@orderAuthorization.isCustomerOwner(#orderId) or " +
+                    "@orderAuthorization.isRestaurantOwner(#orderId)"
+    )
     public ResponseEntity<OrderStatusDto> getOrderStatus(@PathVariable Long orderId) {
         OrderStatusDto statusDto = orderService.getOrderStatus(orderId);
 
@@ -48,6 +64,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderResponseDto> updateOrderStatus(@PathVariable Long orderId, @RequestBody UpdateOrderStatusDto updateOrderStatusDto) {
         OrderResponseDto responseDto = orderService.updateOrderStatus(orderId,updateOrderStatusDto);
 

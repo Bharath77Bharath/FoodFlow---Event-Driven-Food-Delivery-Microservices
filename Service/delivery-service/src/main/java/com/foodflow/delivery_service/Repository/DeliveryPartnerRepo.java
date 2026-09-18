@@ -15,6 +15,8 @@ public interface DeliveryPartnerRepo extends JpaRepository<DeliveryPartner, Long
 
     Optional<DeliveryPartner> findByVehicleNumber(String vehicleNumber);
 
+    Optional<DeliveryPartner> findByUserId(Long userId);
+
     List<DeliveryPartner> findByStatus(DeliveryPartnerStatus status);
 
     boolean existsByPhone(String phone);

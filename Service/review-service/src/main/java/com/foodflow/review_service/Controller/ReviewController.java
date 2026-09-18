@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.CacheResponse;
@@ -22,6 +23,10 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
+    @PreAuthorize("""
+        hasRole('CUSTOMER') and
+        @reviewAuthorization.canCreateReview(#request.orderId)
+        """)
     public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody CreateReviewRequest request) {
         ReviewResponse response = reviewService.createReview(request);
 
@@ -29,6 +34,14 @@ public class ReviewController {
     }
 
     @GetMapping("/{reviewId}")
+    @PreAuthorize("""
+        hasAnyRole(
+            'CUSTOMER',
+            'RESTAURANT_OWNER',
+            'DELIVERY_PARTNER',
+            'ADMIN'
+        )
+        """)
     public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long reviewId) {
         ReviewResponse response = reviewService.getReviewById(reviewId);
 
@@ -36,6 +49,14 @@ public class ReviewController {
     }
 
     @GetMapping("/restaurants/{restaurantId}")
+    @PreAuthorize("""
+        hasAnyRole(
+            'CUSTOMER',
+            'RESTAURANT_OWNER',
+            'DELIVERY_PARTNER',
+            'ADMIN'
+        )
+        """)
     public ResponseEntity<List<ReviewResponse>> getReviewByRestaurantId(@PathVariable Long restaurantId) {
         List<ReviewResponse> reviewResponses = reviewService.getReviewsByRestaurant(restaurantId);
 
@@ -43,6 +64,10 @@ public class ReviewController {
     }
 
     @GetMapping("/users/{userId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @reviewAuthorization.isUser(#userId)
+        """)
     public ResponseEntity<List<ReviewResponse>> getReviewByUserId(@PathVariable Long userId) {
         List<ReviewResponse> reviewResponses = reviewService.getReviewsByUser(userId);
 
@@ -50,6 +75,10 @@ public class ReviewController {
     }
 
     @PutMapping("/{reviewId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @reviewAuthorization.isOwner(#reviewId)
+        """)
     public ResponseEntity<ReviewResponse> updateReview(@PathVariable Long reviewId, @Valid @RequestBody UpdateReviewRequest request) {
         ReviewResponse response = reviewService.updateReview(reviewId, request);
 
@@ -57,6 +86,10 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{reviewId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @reviewAuthorization.isOwner(#reviewId)
+        """)
     public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
         reviewService.deleteReview(reviewId);
 

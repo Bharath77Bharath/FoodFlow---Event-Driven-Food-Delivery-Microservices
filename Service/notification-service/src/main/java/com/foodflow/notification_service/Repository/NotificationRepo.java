@@ -14,4 +14,6 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
     List<Notification> findByOrderIdOrderByCreatedAtDesc(Long orderId);
 
     boolean existsByEventId(String eventId);
+
+    boolean existsByOrderIdAndUserId(Long orderId, Long userId);
 }

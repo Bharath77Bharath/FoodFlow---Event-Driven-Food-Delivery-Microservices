@@ -3,9 +3,11 @@ package com.foodflow.restaurantservice.Controller;
 import com.foodflow.restaurantservice.Dto.RestaurantRequest;
 import com.foodflow.restaurantservice.Dto.RestaurantResponse;
 import com.foodflow.restaurantservice.Service.RestaurantService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,13 +20,15 @@ public class RestaurantController {
     private final RestaurantService restaurantService;
 
     @PostMapping()
-    public ResponseEntity<RestaurantResponse> createRestaurant(@RequestBody RestaurantRequest request) {
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
+    public ResponseEntity<RestaurantResponse> createRestaurant(@Valid @RequestBody RestaurantRequest request) {
         RestaurantResponse response = restaurantService.createRestaurant(request);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN')")
     public ResponseEntity<RestaurantResponse> getRestaurantById(@PathVariable Long id) {
         RestaurantResponse response = restaurantService.getRestaurantById(id);
 
@@ -32,6 +36,7 @@ public class RestaurantController {
     }
 
     @GetMapping()
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN')")
     public ResponseEntity<List<RestaurantResponse>> getRestaurants() {
         List<RestaurantResponse> responseList = restaurantService.getRestaurants();
 
@@ -39,6 +44,7 @@ public class RestaurantController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @restaurantAuthorization.isOwner(#id)")
     public ResponseEntity<RestaurantResponse> updateRestaurant(@PathVariable Long id,@RequestBody RestaurantRequest request) {
         RestaurantResponse response = restaurantService.updateRestaurant(id,request);
 
@@ -46,6 +52,7 @@ public class RestaurantController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @restaurantAuthorization.isOwner(#id)")
     public ResponseEntity<Void> deleteRestaurant(@PathVariable Long id) {
         restaurantService.deleteRestaurant(id);
 
@@ -53,6 +60,7 @@ public class RestaurantController {
     }
 
     @GetMapping("/{id}/availability")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN')")
     public ResponseEntity<Boolean> isRestaurantActive(@PathVariable Long id) {
         boolean active = restaurantService.isRestaurantActive(id);
 
@@ -60,6 +68,7 @@ public class RestaurantController {
     }
 
     @GetMapping("/search/city")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN')")
     public ResponseEntity<List<RestaurantResponse>> searchByCity(@RequestParam String city) {
         List<RestaurantResponse> responses = restaurantService.searchByCity(city);
 
@@ -67,6 +76,7 @@ public class RestaurantController {
     }
 
     @GetMapping("/search/name")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN')")
     public ResponseEntity<List<RestaurantResponse>> searchByName(@RequestParam String name) {
         List<RestaurantResponse> responses = restaurantService.searchByName(name);
 

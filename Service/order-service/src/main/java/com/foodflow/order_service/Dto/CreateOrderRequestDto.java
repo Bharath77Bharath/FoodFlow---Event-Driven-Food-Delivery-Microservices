@@ -14,8 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateOrderRequestDto {
 
-    @NotNull(message = "UserID is required")
-    private Long userId;
+
     @NotNull(message = "RestaurantID is required")
     private Long restaurantId;
     @NotEmpty(message = "Order must contain at least one item")

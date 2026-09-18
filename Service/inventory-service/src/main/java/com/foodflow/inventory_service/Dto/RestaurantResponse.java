@@ -1,4 +1,4 @@
-package com.foodflow.order_service.Dto;
+package com.foodflow.inventory_service.Dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RestaurantResponseDto {
+public class RestaurantResponse {
 
     private Long id;
+    private Long ownerId;
     private String name;
     private String description;
     private String address;
@@ -19,7 +20,6 @@ public class RestaurantResponseDto {
     private String phone;
     private String email;
     private Boolean active;
-    private Long ownerId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

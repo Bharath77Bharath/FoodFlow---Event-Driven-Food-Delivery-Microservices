@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or @inventoryAuthorization.isOwnerOfMenuItem(#request.menuItemId)")
     public ResponseEntity<InventoryResponse> createInventory(@Valid @RequestBody CreateInventoryRequest request) {
         InventoryResponse response = inventoryService.createInventory(request);
 
@@ -30,6 +32,10 @@ public class InventoryController {
     }
 
     @GetMapping("/{inventoryId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @inventoryAuthorization.isOwner(#inventoryId)
+        """)
     public ResponseEntity<InventoryResponse> getInventoryById(@PathVariable Long inventoryId) {
         InventoryResponse response = inventoryService.getInventory(inventoryId);
 
@@ -37,6 +43,10 @@ public class InventoryController {
     }
 
     @GetMapping("/menu-item/{menuItemId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @inventoryAuthorization.isOwnerOfMenuItem(#menuItemId)
+        """)
     public ResponseEntity<InventoryResponse> getInventoryByMenuId(@PathVariable Long menuItemId) {
         InventoryResponse response = inventoryService.getInventoryByMenuItemId(menuItemId);
 
@@ -44,6 +54,7 @@ public class InventoryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<InventoryResponse>> getAllInventory() {
         List<InventoryResponse> responseList = inventoryService.getAllInventory();
 
@@ -51,6 +62,10 @@ public class InventoryController {
     }
 
     @PutMapping("/{inventoryId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @inventoryAuthorization.isOwner(#inventoryId)
+        """)
     public ResponseEntity<InventoryResponse> updateInventory(@PathVariable Long inventoryId, @Valid @RequestBody UpdateInventoryRequest request) {
         InventoryResponse response = inventoryService.updateInventory(inventoryId, request);
 
@@ -58,6 +73,10 @@ public class InventoryController {
     }
 
     @DeleteMapping("/{inventoryId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @inventoryAuthorization.isOwner(#inventoryId)
+        """)
     public ResponseEntity<Void> deleteInventory(@PathVariable Long inventoryId) {
         inventoryService.deleteInventory(inventoryId);
 

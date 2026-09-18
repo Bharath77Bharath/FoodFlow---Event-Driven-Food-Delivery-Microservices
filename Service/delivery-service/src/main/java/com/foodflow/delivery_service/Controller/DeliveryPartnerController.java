@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class DeliveryPartnerController {
     private final DeliveryPartnerService deliveryPartnerService;
 
     @PostMapping
+    @PreAuthorize("hasRole('DELIVERY_PARTNER')")
     public ResponseEntity<DeliveryPartnerResponseDto> createPartner(@Valid @RequestBody DeliveryPartnerRequestDto request) {
         DeliveryPartnerResponseDto response = deliveryPartnerService.createPartner(request);
 
@@ -28,6 +30,10 @@ public class DeliveryPartnerController {
     }
 
     @GetMapping("/{partnerId}")
+    @PreAuthorize(
+            "hasRole('ADMIN') or " +
+                    "@deliveryPartnerAuthorization.isOwner(#partnerId)"
+    )
     public ResponseEntity<DeliveryPartnerResponseDto> getPartnerById(@PathVariable Long partnerId) {
         DeliveryPartnerResponseDto response = deliveryPartnerService.getPartnerById(partnerId);
 
@@ -35,6 +41,7 @@ public class DeliveryPartnerController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DeliveryPartnerResponseDto>> getAllPartners() {
         List<DeliveryPartnerResponseDto> responseList = deliveryPartnerService.getAllPartners();
 
@@ -42,20 +49,37 @@ public class DeliveryPartnerController {
     }
 
     @PutMapping("/{partnerId}")
+    @PreAuthorize(
+            "hasRole('ADMIN') or " +
+                    "@deliveryPartnerAuthorization.isOwner(#partnerId)"
+    )
     public ResponseEntity<DeliveryPartnerResponseDto> updatePartner(@PathVariable Long partnerId, @Valid @RequestBody DeliveryPartnerRequestDto request) {
         DeliveryPartnerResponseDto response = deliveryPartnerService.updatePartner(partnerId, request);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{partnerId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DeliveryPartnerResponseDto> updatePartnerStatus(@PathVariable Long partnerId, @RequestParam DeliveryPartnerStatus status) {
         DeliveryPartnerResponseDto response = deliveryPartnerService.updatePartnerStatus(partnerId,status);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PutMapping("/my-status")
+    @PreAuthorize("hasRole('DELIVERY_PARTNER')")
+    public ResponseEntity<DeliveryPartnerResponseDto> updateOwnStatus(
+            @RequestParam DeliveryPartnerStatus status) {
+
+        DeliveryPartnerResponseDto response =
+                deliveryPartnerService.updateOwnStatus(status);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @DeleteMapping("/{partnerId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DeliveryPartnerResponseDto> deletePartner(@PathVariable Long partnerId) {
         deliveryPartnerService.deletePartner(partnerId);
 

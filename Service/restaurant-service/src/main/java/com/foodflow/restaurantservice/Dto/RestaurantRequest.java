@@ -11,8 +11,8 @@ import lombok.*;
 @NoArgsConstructor
 public class RestaurantRequest {
 
-    @NotNull(message = "Owner id is required")
-    private Long ownerId;
+//    @NotNull(message = "Owner id is required")
+//    private Long ownerId;
 
     @NotBlank(message = "Restaurant Name is required")
     private String name;

@@ -6,6 +6,7 @@ import com.foodflow.order_service.Entity.OrderStatus;
 import com.foodflow.common.Event.*;
 import com.foodflow.order_service.Exception.OrderNotFoundException;
 import com.foodflow.order_service.Repository.OrderRepo;
+import com.foodflow.order_service.Security.EventAuthorization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,6 +20,7 @@ public class KafkaConsumerService {
     private final OrderRepo orderRepo;
     private final ObjectMapper objectMapper;
     private final KafkaProducerService kafkaProducerService;
+    private final EventAuthorization eventAuthorization;
 
     @KafkaListener(
             topics = "payment-events",
@@ -32,6 +34,17 @@ public class KafkaConsumerService {
                 envelope.getEventType(),
                 envelope.getSource()
         );
+        if (!eventAuthorization.isFrom(
+                envelope.getSource(),
+                "payment-service")) {
+
+            log.warn(
+                    "Rejected payment event from unauthorized source: {}",
+                    envelope.getSource()
+            );
+
+            return;
+        }
 
         if (EventType.PAYMENT_CREATED.name().equals(envelope.getEventType())) {
 
@@ -80,6 +93,18 @@ public class KafkaConsumerService {
                 envelope.getEventType(),
                 envelope.getSource()
         );
+
+        if (!eventAuthorization.isFrom(
+                envelope.getSource(),
+                "restaurant-service")) {
+
+            log.warn(
+                    "Rejected restaurant event from unauthorized source: {}",
+                    envelope.getSource()
+            );
+
+            return;
+        }
 
         if(EventType.ORDER_ACCEPTED.name().equals(envelope.getEventType())) {
             OrderAcceptedEvent event = objectMapper.convertValue(
@@ -132,6 +157,18 @@ public class KafkaConsumerService {
                 envelope.getEventType(),
                 envelope.getSource()
         );
+
+        if (!eventAuthorization.isFrom(
+                envelope.getSource(),
+                "delivery-service")) {
+
+            log.warn(
+                    "Rejected delivery event from unauthorized source: {}",
+                    envelope.getSource()
+            );
+
+            return;
+        }
 
         if (EventType.OUT_FOR_DELIVERY.name()
                 .equals(envelope.getEventType())) {
@@ -192,6 +229,18 @@ public class KafkaConsumerService {
                 envelope.getEventType(),
                 envelope.getSource()
         );
+
+        if (!eventAuthorization.isFrom(
+                envelope.getSource(),
+                "inventory-service")) {
+
+            log.warn(
+                    "Rejected inventory event from unauthorized source: {}",
+                    envelope.getSource()
+            );
+
+            return;
+        }
 
         if (EventType.INVENTORY_RESERVED.name()
                 .equals(envelope.getEventType())) {

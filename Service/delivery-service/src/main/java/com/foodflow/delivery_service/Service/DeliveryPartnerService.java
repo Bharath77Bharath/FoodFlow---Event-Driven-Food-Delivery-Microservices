@@ -9,6 +9,7 @@ import com.foodflow.delivery_service.Exception.DeliveryPartnerNotFoundException;
 import com.foodflow.delivery_service.Exception.DuplicateDeliveryPartnerException;
 import com.foodflow.delivery_service.Kafka.DeliveryKafkaProducer;
 import com.foodflow.delivery_service.Repository.DeliveryPartnerRepo;
+import com.foodflow.delivery_service.Security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,11 @@ public class DeliveryPartnerService {
             throw new DuplicateDeliveryPartnerException("Delivery partner with vehicle number "+request.getVehicleNumber()+" already exists!");
         }
 
+        Long currentUser = SecurityUtils.getCurrentUserId();
+
         DeliveryPartner partner = convertToDeliveryPartner(request);
+
+        partner.setUserId(currentUser);
 
         DeliveryPartner savedPartner = deliveryPartnerRepo.save(partner);
 
@@ -109,6 +114,37 @@ public class DeliveryPartnerService {
         DeliveryPartner partner = deliveryPartnerRepo.findById(partnerId).orElseThrow(() -> new DeliveryPartnerNotFoundException("Delivery partner not found with id: "+partnerId));
 
         deliveryPartnerRepo.delete(partner);
+    }
+
+    public DeliveryPartnerResponseDto updateOwnStatus(DeliveryPartnerStatus status) {
+
+        if (status != DeliveryPartnerStatus.AVAILABLE &&
+                status != DeliveryPartnerStatus.OFFLINE) {
+
+            throw new IllegalArgumentException(
+                    "Delivery partner can only set status to AVAILABLE or OFFLINE"
+            );
+        }
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        DeliveryPartner partner = deliveryPartnerRepo
+                .findByUserId(currentUserId)
+                .orElseThrow(() ->
+                        new RuntimeException("Delivery partner profile not found")
+                );
+
+        partner.setStatus(status);
+
+        if (status == DeliveryPartnerStatus.AVAILABLE) {
+            partner.setAvailableSince(LocalDateTime.now());
+        } else {
+            partner.setAvailableSince(null);
+        }
+
+        return convertToDeliveryPartnerResponse(
+                deliveryPartnerRepo.save(partner)
+        );
     }
 
     //helper methods

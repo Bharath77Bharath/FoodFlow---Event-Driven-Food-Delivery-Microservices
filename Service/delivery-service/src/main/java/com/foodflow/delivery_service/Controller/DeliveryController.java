@@ -10,6 +10,7 @@ import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class DeliveryController {
     private final DeliveryService deliveryService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DeliveryResponseDto> createDelivery(@Valid @RequestBody DeliveryRequestDto request) {
         DeliveryResponseDto response = deliveryService.createDelivery(request);
 
@@ -29,6 +31,11 @@ public class DeliveryController {
     }
 
     @GetMapping("/{deliveryId}")
+    @PreAuthorize("""
+    hasRole('ADMIN') or
+    @deliveryAuthorization.isCustomerOwner(#deliveryId) or
+    @deliveryAuthorization.isAssignedDeliveryPartner(#deliveryId)
+""")
     public ResponseEntity<DeliveryResponseDto> getDeliveryById(@PathVariable Long deliveryId) {
         DeliveryResponseDto response = deliveryService.getDeliveryById(deliveryId);
 
@@ -36,6 +43,7 @@ public class DeliveryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DeliveryResponseDto>> getAllDeliveries() {
         List<DeliveryResponseDto> response = deliveryService.getAllDeliveries();
 
@@ -43,6 +51,11 @@ public class DeliveryController {
     }
 
     @GetMapping("/order/{orderId}")
+    @PreAuthorize("""
+    hasRole('ADMIN') or
+    @deliveryAuthorization.isCustomerOwnerByOrderId(#orderId) or
+    @deliveryAuthorization.isAssignedPartnerByOrderId(#orderId)
+""")
     public ResponseEntity<DeliveryResponseDto> getDeliveryByOrderId(@PathVariable Long orderId) {
         DeliveryResponseDto response = deliveryService.getDeliveryByOrderId(orderId);
 
@@ -50,6 +63,10 @@ public class DeliveryController {
     }
 
     @PutMapping("{deliveryId}/status")
+    @PreAuthorize("""
+    hasRole('ADMIN') or
+    @deliveryAuthorization.isAssignedDeliveryPartner(#deliveryId)
+""")
     public ResponseEntity<DeliveryResponseDto> updateDelivery(@PathVariable Long deliveryId, @RequestParam DeliveryStatus status) {
         DeliveryResponseDto response = deliveryService.updateDelivery(deliveryId,status);
 

@@ -12,6 +12,7 @@ import com.foodflow.paymentservice.Gateway.PaymentGateway;
 import com.foodflow.paymentservice.Gateway.PaymentGatewayResponse;
 import com.foodflow.paymentservice.Kafka.PaymentKafkaProducer;
 import com.foodflow.paymentservice.Repository.PaymentRepo;
+import com.foodflow.paymentservice.Security.SecurityUtils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

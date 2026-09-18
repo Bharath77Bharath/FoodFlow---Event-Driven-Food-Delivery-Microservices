@@ -12,6 +12,7 @@ import com.foodflow.common.Event.OrderCreatedEvent;
 import com.foodflow.order_service.Exception.*;
 import com.foodflow.order_service.Kafka.KafkaProducerService;
 import com.foodflow.order_service.Repository.OrderRepo;
+import com.foodflow.order_service.Security.SecurityUtils;
 import feign.FeignException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,9 @@ public class OrderService {
 
     public OrderResponseDto createOrder(CreateOrderRequestDto request) {
 
-        UserResponseDto userResponse = getUser(request.getUserId());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        UserResponseDto userResponse = getUser(currentUserId);
 
         RestaurantResponseDto restaurantResponse = getRestaurant(request.getRestaurantId());
 
@@ -67,7 +70,7 @@ public class OrderService {
 
         Order order = new Order();
 
-        order.setUserId(request.getUserId());
+        order.setUserId(currentUserId);
         order.setRestaurantId(request.getRestaurantId());
         order.setTotalAmount(totalAmount);
         order.setStatus(OrderStatus.PLACED);
@@ -236,17 +239,34 @@ public class OrderService {
         }
     }
 
-    private boolean isValidOrderStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
-        if(currentStatus == OrderStatus.PLACED) {
-            return newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
+    private boolean isValidOrderStatusTransition(
+            OrderStatus currentStatus,
+            OrderStatus newStatus) {
+
+        if (currentStatus == OrderStatus.PLACED) {
+            return newStatus == OrderStatus.PAYMENT_PROCESSING
+                    || newStatus == OrderStatus.CANCELLED;
         }
-        if(currentStatus == OrderStatus.CONFIRMED) {
-            return newStatus == OrderStatus.PREPARING || newStatus == OrderStatus.CANCELLED;
+
+        if (currentStatus == OrderStatus.PAYMENT_PROCESSING) {
+            return newStatus == OrderStatus.CONFIRMED
+                    || newStatus == OrderStatus.PAYMENT_FAILED;
         }
-        if(currentStatus == OrderStatus.PREPARING) {
+
+        if (currentStatus == OrderStatus.CONFIRMED) {
+            return newStatus == OrderStatus.PREPARING
+                    || newStatus == OrderStatus.CANCELLED;
+        }
+
+        if (currentStatus == OrderStatus.PREPARING) {
+            return newStatus == OrderStatus.READY_FOR_PICKUP;
+        }
+
+        if (currentStatus == OrderStatus.READY_FOR_PICKUP) {
             return newStatus == OrderStatus.OUT_FOR_DELIVERY;
         }
-        if(currentStatus == OrderStatus.OUT_FOR_DELIVERY) {
+
+        if (currentStatus == OrderStatus.OUT_FOR_DELIVERY) {
             return newStatus == OrderStatus.DELIVERED;
         }
 

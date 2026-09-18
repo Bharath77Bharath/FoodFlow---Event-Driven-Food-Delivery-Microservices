@@ -6,6 +6,7 @@ import com.foodflow.restaurantservice.Dto.RestaurantResponse;
 import com.foodflow.restaurantservice.Entity.Restaurant;
 import com.foodflow.restaurantservice.Exception.RestaurantNotFoundException;
 import com.foodflow.restaurantservice.Repository.RestaurantRepo;
+import com.foodflow.restaurantservice.Security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,11 +40,13 @@ public class RestaurantService {
 
     public RestaurantResponse createRestaurant(RestaurantRequest request) {
 
-        userServiceClient.getUserById(request.getOwnerId());
+        Long currentUser = SecurityUtils.getCurrentUserId();
+
+        userServiceClient.getUserById(currentUser);
 
         Restaurant restaurant = new Restaurant();
 
-        restaurant.setOwnerId(request.getOwnerId());
+        restaurant.setOwnerId(currentUser);
         restaurant.setName(request.getName());
         restaurant.setDescription(request.getDescription());
         restaurant.setAddress(request.getAddress());

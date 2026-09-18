@@ -35,7 +35,7 @@ public class InternalServiceAuthenticationFilter extends OncePerRequestFilter {
 
             UsernamePasswordAuthenticationToken authentication =
                     UsernamePasswordAuthenticationToken.authenticated(
-                            "delivery-service",
+                            "internal-service",
                             null,
                             List.of(
                                     new SimpleGrantedAuthority("ROLE_SERVICE")

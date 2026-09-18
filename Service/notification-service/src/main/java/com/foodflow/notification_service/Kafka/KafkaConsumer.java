@@ -131,77 +131,74 @@ public class KafkaConsumer {
                 envelope.getSource()
         );
 
-        if (!EventType.ORDER_CONFIRMED.name().equals(envelope.getEventType())) {
-            return;
-        }
+        if (EventType.ORDER_CONFIRMED.name().equals(envelope.getEventType())) {
 
-        OrderConfirmedEvent orderConfirmedEvent =
-                objectMapper.convertValue(
-                        envelope.getData(),
-                        OrderConfirmedEvent.class
-                );
+            OrderConfirmedEvent event =
+                    objectMapper.convertValue(
+                            envelope.getData(),
+                            OrderConfirmedEvent.class
+                    );
 
-        Notification notification1 =
-                notificationService.createNotification(
-                        envelope.getEventId(),
-                        orderConfirmedEvent.getUserId(),
-                        orderConfirmedEvent.getOrderId(),
-                        NotificationType.ORDER_CONFIRMED,
-                        NotificationChannel.IN_APP,
-                        "Your order #" + orderConfirmedEvent.getOrderId()
-                                + " has been confirmed by the restaurant."
-                );
+            Notification notification =
+                    notificationService.createNotification(
+                            envelope.getEventId(),
+                            event.getUserId(),
+                            event.getOrderId(),
+                            NotificationType.ORDER_CONFIRMED,
+                            NotificationChannel.IN_APP,
+                            "Your order #" + event.getOrderId()
+                                    + " has been confirmed by the restaurant."
+                    );
 
-        if (notification1 != null) {
-            notificationService.sendNotification(notification1);
-        }
+            if (notification != null) {
+                notificationService.sendNotification(notification);
+            }
 
-        else if (EventType.ORDER_ACCEPTED.name().equals(envelope.getEventType())) {
+        } else if (EventType.ORDER_ACCEPTED.name().equals(envelope.getEventType())) {
 
-            OrderAcceptedEvent orderAcceptedEvent =
+            OrderAcceptedEvent event =
                     objectMapper.convertValue(
                             envelope.getData(),
                             OrderAcceptedEvent.class
                     );
 
-            Notification notification2 =
+            Notification notification =
                     notificationService.createNotification(
                             envelope.getEventId(),
-                            orderAcceptedEvent.getUserId(),
-                            orderAcceptedEvent.getOrderId(),
+                            event.getUserId(),
+                            event.getOrderId(),
                             NotificationType.ORDER_PREPARING,
                             NotificationChannel.IN_APP,
                             "The restaurant has accepted your order #"
-                                    + orderAcceptedEvent.getOrderId()
+                                    + event.getOrderId()
                                     + " and is preparing it."
                     );
 
-            if (notification2 != null) {
-                notificationService.sendNotification(notification2);
+            if (notification != null) {
+                notificationService.sendNotification(notification);
             }
-        }
 
-        else if (EventType.FOOD_READY.name().equals(envelope.getEventType())) {
+        } else if (EventType.FOOD_READY.name().equals(envelope.getEventType())) {
 
-            FoodReadyEvent foodReadyEvent =
+            FoodReadyEvent event =
                     objectMapper.convertValue(
                             envelope.getData(),
                             FoodReadyEvent.class
                     );
 
-            Notification notification3 =
+            Notification notification =
                     notificationService.createNotification(
                             envelope.getEventId(),
-                            foodReadyEvent.getUserId(),
-                            foodReadyEvent.getOrderId(),
+                            event.getUserId(),
+                            event.getOrderId(),
                             NotificationType.FOOD_READY,
                             NotificationChannel.IN_APP,
-                            "Your order #" + foodReadyEvent.getOrderId()
+                            "Your order #" + event.getOrderId()
                                     + " is ready for pickup."
                     );
 
-            if (notification3 != null) {
-                notificationService.sendNotification(notification3);
+            if (notification != null) {
+                notificationService.sendNotification(notification);
             }
         }
     }

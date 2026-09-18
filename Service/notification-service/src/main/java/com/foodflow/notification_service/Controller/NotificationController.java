@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,10 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/{notificationId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @notificationAuthorization.isOwner(#notificationId)
+        """)
     public ResponseEntity<NotificationResponse> getNotificationById(@PathVariable Long notificationId) {
         NotificationResponse response = notificationService.getNotificationById(notificationId);
 
@@ -28,6 +33,10 @@ public class NotificationController {
     }
 
     @GetMapping("/users/{userId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @notificationAuthorization.isOwnerByUserId(#userId)
+        """)
     public ResponseEntity<List<NotificationResponse>> getNotificationByUserId(@PathVariable Long userId) {
         List<NotificationResponse> responseList = notificationService.getNotificationsByUserId(userId);
 
@@ -35,6 +44,10 @@ public class NotificationController {
     }
 
     @GetMapping("/orders/{orderId}")
+    @PreAuthorize("""
+        hasRole('ADMIN') or
+        @notificationAuthorization.isOwnerByOrderId(#orderId)
+        """)
     public ResponseEntity<List<NotificationResponse>> getNotificationByOrderId(@PathVariable Long orderId) {
         List<NotificationResponse> responseList = notificationService.getNotificationsByOrderId(orderId);
 

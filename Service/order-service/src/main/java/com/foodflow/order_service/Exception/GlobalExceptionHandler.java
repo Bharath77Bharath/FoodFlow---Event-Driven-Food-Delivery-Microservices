@@ -113,14 +113,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handleGenericException(Exception e) {
-        ErrorResponseDto responseDto = new ErrorResponseDto(
-                "An unexpected error occurred",
+    public ResponseEntity<ErrorResponseDto> handleException(Exception ex) {
+
+        ex.printStackTrace();
+
+        ErrorResponseDto error = new ErrorResponseDto(
+                "An unexpected error occurred: " + ex.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 LocalDateTime.now()
         );
 
-        return new ResponseEntity<>(responseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(error);
     }
 
 }
