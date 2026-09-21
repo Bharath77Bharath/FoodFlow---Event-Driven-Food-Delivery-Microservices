@@ -8,6 +8,8 @@ import com.foodflow.restaurantservice.Exception.RestaurantNotFoundException;
 import com.foodflow.restaurantservice.Repository.RestaurantRepo;
 import com.foodflow.restaurantservice.Security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ public class RestaurantService {
         return convertRestaurantResponse(savedRestaurant);
     }
 
+    @Cacheable(value = "restaurants", key = "#id")
     public RestaurantResponse getRestaurantById(Long id) {
         Restaurant restaurant = restaurantRepo.findById(id).orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found!"));
 
@@ -78,6 +81,7 @@ public class RestaurantService {
         return responseList;
     }
 
+    @CacheEvict(value = "restaurants", key = "#id")
     public RestaurantResponse updateRestaurant(Long id, RestaurantRequest request) {
         Restaurant restaurant = restaurantRepo.findById(id).orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found!"));
 
@@ -93,6 +97,7 @@ public class RestaurantService {
         return convertRestaurantResponse(savedRestaurant);
     }
 
+    @CacheEvict(value = "restaurants", key = "#id")
     public void deleteRestaurant(Long id) {
         Restaurant restaurant = restaurantRepo.findById(id).orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found!"));
 

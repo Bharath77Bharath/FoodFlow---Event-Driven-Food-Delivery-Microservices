@@ -46,6 +46,16 @@ services:
       KAFKA_CLUSTERS_0_NAME: foodflow
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
+  redis:
+    image: redis:7-alpine
+    container_name: foodflow-redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis-data:/data
 
 volumes:
   kafka-data:
+  redis-data:
