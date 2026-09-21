@@ -28,7 +28,9 @@ public class RestaurantController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN')")
+    @PreAuthorize(
+            "hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER', 'ADMIN', 'SERVICE')"
+    )
     public ResponseEntity<RestaurantResponse> getRestaurantById(@PathVariable Long id) {
         RestaurantResponse response = restaurantService.getRestaurantById(id);
 

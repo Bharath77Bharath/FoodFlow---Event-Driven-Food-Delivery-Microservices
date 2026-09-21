@@ -2,6 +2,7 @@ package com.foodflow.order_service.Security;
 
 import com.foodflow.order_service.Client.RestaurantServiceClient;
 import com.foodflow.order_service.Entity.Order;
+import com.foodflow.order_service.Exception.OrderNotFoundException;
 import com.foodflow.order_service.Repository.OrderRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,12 @@ public class OrderAuthorization {
 
     public boolean isCustomerOwner(Long orderId) {
 
-        Order order = orderRepo.findById(orderId).orElse(null);
-
-        if (order == null) {
-            return false;
-        }
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + orderId
+                        )
+                );
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -28,11 +30,12 @@ public class OrderAuthorization {
 
     public boolean isRestaurantOwner(Long orderId) {
 
-        Order order = orderRepo.findById(orderId).orElse(null);
-
-        if (order == null) {
-            return false;
-        }
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + orderId
+                        )
+                );
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 

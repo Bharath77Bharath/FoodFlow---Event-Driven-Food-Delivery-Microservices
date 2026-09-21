@@ -66,6 +66,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(OrderServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponseDto> handleOrderServiceUnavailable(OrderServiceUnavailableException e) {
+        ErrorResponseDto responseDto = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(responseDto, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();

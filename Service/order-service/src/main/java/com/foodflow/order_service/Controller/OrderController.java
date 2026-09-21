@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.foodflow.order_service.Security.OrderAuthorization;
+import com.foodflow.order_service.Security.SecurityUtils;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
@@ -19,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+    private final OrderAuthorization orderAuthorization;
 
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -29,15 +33,34 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize(
-            "hasRole('ADMIN') or " +
-                    "@orderAuthorization.isCustomerOwner(#orderId) or " +
-                    "@orderAuthorization.isRestaurantOwner(#orderId)"
-    )
-    public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable Long orderId) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrderResponseDto> getOrderById(
+            @PathVariable Long orderId
+    ) {
+
+        // First check whether the order exists
         OrderResponseDto response = orderService.getOrderById(orderId);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        // Internal services and admins can access the order
+        if (SecurityUtils.hasRole("ADMIN") ||
+                SecurityUtils.hasRole("SERVICE")) {
+
+            return ResponseEntity.ok(response);
+        }
+
+        // Check customer ownership
+        boolean isCustomer =
+                orderAuthorization.isCustomerOwner(orderId);
+
+        // Check restaurant ownership
+        boolean isRestaurantOwner =
+                orderAuthorization.isRestaurantOwner(orderId);
+
+        if (!isCustomer && !isRestaurantOwner) {
+            throw new AccessDeniedException("Access denied");
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user/{userId}")

@@ -15,4 +15,20 @@ public class SecurityUtils {
 
         return Long.valueOf(jwt.getSubject());
     }
+
+    public static boolean hasRole(String role) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            return false;
+        }
+
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_" + role)
+                );
+    }
 }

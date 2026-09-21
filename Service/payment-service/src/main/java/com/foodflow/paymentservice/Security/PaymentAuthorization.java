@@ -4,6 +4,7 @@ import com.foodflow.paymentservice.Client.OrderServiceClient;
 import com.foodflow.paymentservice.Dto.OrderResponseDto;
 import com.foodflow.paymentservice.Entity.Payment;
 import com.foodflow.paymentservice.Repository.PaymentRepo;
+import com.foodflow.paymentservice.Service.OrderServiceAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class PaymentAuthorization {
 
     private final PaymentRepo paymentRepo;
-    private final OrderServiceClient orderServiceClient;
+    private final OrderServiceAdapter orderServiceAdapter;
 
     public boolean isOwner(Long paymentId) {
 
@@ -44,7 +45,7 @@ public class PaymentAuthorization {
     public boolean isOrderOwner(Long orderId) {
 
         OrderResponseDto order =
-                orderServiceClient.getOrderById(orderId);
+                orderServiceAdapter.getOrderById(orderId);
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 

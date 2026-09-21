@@ -25,19 +25,14 @@ import java.util.UUID;
 public class PaymentService {
 
     private final PaymentRepo paymentRepo;
-    private final OrderServiceClient orderServiceClient;
+    private final OrderServiceAdapter orderServiceAdapter;
     private final PaymentGateway paymentGateway;
     private final PaymentKafkaProducer paymentKafkaProducer;
 
     @Transactional
     public PaymentResponse createPayment(PaymentRequest request) {
 
-        OrderResponseDto responseDto;
-        try {
-            responseDto = orderServiceClient.getOrderById(request.getOrderId());
-        }catch (FeignException.NotFound e) {
-            throw new OrderNotFoundException("Order not found with id: "+request.getOrderId());
-        }
+        OrderResponseDto responseDto = orderServiceAdapter.getOrderById(request.getOrderId());
 
         if(!"PLACED".equals(responseDto.getStatus())) {
             throw new InvalidOrderStatusException("Payment can only be initiated for PLACED orders");

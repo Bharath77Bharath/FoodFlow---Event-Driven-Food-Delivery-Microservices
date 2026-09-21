@@ -32,6 +32,7 @@ public class DeliveryService {
     private final RestaurantServiceClient restaurantServiceClient;
     private final DeliveryKafkaProducer deliveryKafkaProducer;
     private final DeliverySimulationService deliverySimulationService;
+    private final UserServiceAdapter userServiceAdapter;
 
     @Transactional
     public DeliveryResponseDto createDelivery(DeliveryRequestDto request) {
@@ -198,7 +199,7 @@ public class DeliveryService {
     }
 
     private String getCustomerAddress(Long userId) {
-        UserResponse response = userServiceClient.getUserById(userId);
+        UserResponse response = userServiceAdapter.getUserById(userId);
 
         return response.getAddress();
     }
