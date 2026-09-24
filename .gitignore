@@ -1,0 +1,26 @@
+# Environment variables
+*.env
+.env
+.env.*
+
+# Node
+**/node_modules/
+
+# Frontend build
+**/dist/
+**/build/
+
+# Java / Maven
+**/target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

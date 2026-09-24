@@ -47,6 +47,11 @@ public class ReviewAuthorization {
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 
+        System.out.println("DEBUG orderId = " + orderId);
+        System.out.println("DEBUG eligibilityUserId = " + eligibility.getUserId());
+        System.out.println("DEBUG currentUserId = " + currentUserId);
+
+
         return currentUserId.equals(eligibility.getUserId());
     }
 }
