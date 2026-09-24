@@ -1,5 +1,27 @@
 services:
 
+  # =========================
+  # PostgreSQL
+  # =========================
+  postgres:
+    image: postgres:17
+    container_name: foodflow-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+
+  # =========================
+  # Kafka
+  # =========================
   kafka:
     image: apache/kafka:4.0.1
     container_name: foodflow-kafka
@@ -32,6 +54,9 @@ services:
       - kafka-data:/var/lib/kafka/data
 
 
+  # =========================
+  # Kafka UI
+  # =========================
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: foodflow-kafka-ui
@@ -46,6 +71,10 @@ services:
       KAFKA_CLUSTERS_0_NAME: foodflow
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
+
+  # =========================
+  # Redis
+  # =========================
   redis:
     image: redis:7-alpine
     container_name: foodflow-redis
@@ -56,6 +85,290 @@ services:
     volumes:
       - redis-data:/data
 
+
+  # =========================
+  # Eureka Server
+  # =========================
+  eureka-server:
+    build:
+      context: ./Service/service-discovery
+
+    container_name: foodflow-eureka-server
+
+    ports:
+      - "8761:8761"
+
+
+  # =========================
+  # User Service
+  # =========================
+  user-service:
+    build:
+      context: ./Service/user-service
+
+    container_name: foodflow-user-service
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_user_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      FOODFLOW_INTERNAL_API_KEY: ${FOODFLOW_INTERNAL_API_KEY}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      ADMIN_EMAIL: admin@foodflow.com
+      ADMIN_PASSWORD: admin@foodflow.com
+      ADMIN_NAME: FoodFlow Admin
+      ADMIN_PHONE: 9999999999
+      ADMIN_ADDRESS: FoodFlow Headquarters
+
+    depends_on:
+      - postgres
+      - eureka-server
+
+
+  # =========================
+  # Restaurant Service
+  # =========================
+  restaurant-service:
+    build:
+      context: ./Service/restaurant-service
+
+    container_name: foodflow-restaurant-service
+
+    ports:
+      - "8082:8082"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_restaurant_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      FOODFLOW_INTERNAL_API_KEY: ${FOODFLOW_INTERNAL_API_KEY}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+      - redis
+
+
+  # =========================
+  # Order Service
+  # =========================
+  order-service:
+    build:
+      context: ./Service/order-service
+
+    container_name: foodflow-order-service
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_order_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      FOODFLOW_INTERNAL_API_KEY: ${FOODFLOW_INTERNAL_API_KEY}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+
+
+  # =========================
+  # Payment Service
+  # =========================
+  payment-service:
+    build:
+      context: ./Service/payment-service
+
+    container_name: foodflow-payment-service
+
+    ports:
+      - "8084:8084"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_payment_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      FOODFLOW_INTERNAL_API_KEY: ${FOODFLOW_INTERNAL_API_KEY}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+
+
+  # =========================
+  # Delivery Service
+  # =========================
+  delivery-service:
+    build:
+      context: ./Service/delivery-service
+
+    container_name: foodflow-delivery-service
+
+    ports:
+      - "8085:8085"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_delivery_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      FOODFLOW_INTERNAL_API_KEY: ${FOODFLOW_INTERNAL_API_KEY}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+
+
+  # =========================
+  # Inventory Service
+  # =========================
+  inventory-service:
+    build:
+      context: ./Service/inventory-service
+
+    container_name: foodflow-inventory-service
+
+    ports:
+      - "8086:8086"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_inventory_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      FOODFLOW_INTERNAL_API_KEY: ${FOODFLOW_INTERNAL_API_KEY}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+
+
+  # =========================
+  # Review Service
+  # =========================
+  review-service:
+    build:
+      context: ./Service/review-service
+
+    container_name: foodflow-review-service
+
+    ports:
+      - "8087:8087"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_review_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+
+
+  # =========================
+  # Notification Service
+  # =========================
+  notification-service:
+    build:
+      context: ./Service/notification-service
+
+    container_name: foodflow-notification-service
+
+    ports:
+      - "8088:8088"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/foodflow_notification_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+    depends_on:
+      - postgres
+      - eureka-server
+      - kafka
+
+
+  # =========================
+  # API Gateway
+  # =========================
+  api-gateway:
+    build:
+      context: ./Service/api-gateway
+
+    container_name: foodflow-api-gateway
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+
+      EUREKA_URL: http://eureka-server:8761/eureka/
+
+    depends_on:
+      - eureka-server
+
+
+# =========================
+# Volumes
+# =========================
 volumes:
+  postgres-data:
   kafka-data:
   redis-data:
